@@ -28,10 +28,12 @@ Steps to deploy the solution.
 ---
 
 ## Contributors
-Cheong Shu Yin
-Raven Tang
-Nadhirah Binti Ayub Khan
-Low Yi San
+
+- **Cheong Shu Yin**  
+- **Raven Tang**  
+- **Nadhirah Binti Ayub Khan**  
+- **Low Yi San**  
+
 
 ---
 
