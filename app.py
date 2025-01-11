@@ -49,7 +49,7 @@ class ChatGUI:
         bottom_frame.pack(fill=X, side=BOTTOM, pady=10, padx=10)
 
         # Upload button
-        upload_button = Button(bottom_frame, text="Upload", font=FONT_BOLD, bg=BG, command=self._upload_file)  # Triple the height by adding internal padding in y-direction
+        upload_button = Button(bottom_frame, text="Upload CV\n(docx/pdf)", font=FONT_BOLD, bg=BG, command=self._upload_file)  # Triple the height by adding internal padding in y-direction
         upload_button.grid(row=1, column=0, sticky="w", padx=5, ipady=10)
 
         # message entry box
