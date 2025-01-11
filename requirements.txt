@@ -3,3 +3,6 @@ langchain_community
 langchain-ollama
 ollama
 faiss-cpu
+sentence_transformers
+numpy
+pandas

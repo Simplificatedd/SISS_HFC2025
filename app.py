@@ -16,7 +16,7 @@ BOT_NAME = "Debbie"
 MODEL = "qwen2.5:3b"
 
 CAREER_KEY = "career", "job", "position", "role", "careers", "jobs", "positions", "roles", "work", "employment", "occupation"
-SKILL_KEY = "skill", "expertise", "technology", "competency", "skills", "expertises", "technologies", "competencies"
+SKILL_KEY = "skill", "expertise", "technology", "competency", "skills", "expertises", "technologies", "competencies", "course", "courses"
 
 class ChatGUI:
     def __init__(self):
