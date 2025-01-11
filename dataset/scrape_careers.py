@@ -34,6 +34,12 @@ def scrape_page():
             job_title = card.find("span", {"data-testid": "job-card__job-title"}).text.strip()
         except AttributeError:
             job_title = "N/A"
+
+        try:
+            job_link = card["href"]
+            job_link = f"https://www.mycareersfuture.gov.sg{job_link}"
+        except (AttributeError, TypeError):
+            job_link = "N/A"
         
         try:
             company = card.find("p", {"data-testid": "company-hire-info"}).text.strip()
@@ -88,13 +94,11 @@ def scrape_page():
 
         jobs.append({
             "Job Title": job_title,
+            "Link": job_link,
             "Company": company,
             "Location": location,
             "Employment Type": employment_type,
-            "Seniority": seniority,
-            "Category": category,
-            "Salary": salary,
-            "Posted Date": posted_date
+            "Salary": salary
         })
     
     return jobs
@@ -109,10 +113,14 @@ while True:
         jobs_on_page = scrape_page()
         all_jobs.extend(jobs_on_page)
         
-        # Find and click the "Next" button
-        next_button = wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Next']"))
-        )
+       # Check if the "Next" button exists
+        next_buttons = driver.find_elements(By.XPATH, "//button[@aria-label='Next']")
+        if not next_buttons:  # If the "Next" button is not found
+            print("No more pages to scrape. Exiting.")
+            break
+
+        # Click the "Next" button (access the first button in the list)
+        next_button = next_buttons[0]
         next_button.click()
         time.sleep(2)  # Wait for the next page to load
     except Exception as e:

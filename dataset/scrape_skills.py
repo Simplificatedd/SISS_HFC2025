@@ -14,6 +14,7 @@ options.add_argument("--disable-gpu")
 options.add_argument("--no-sandbox")
 
 driver = webdriver.Chrome(options=options)
+
 driver.maximize_window()
 
 # Open the website
@@ -45,6 +46,13 @@ def scrape_page():
             course_title = card.find("h5", class_="card-title").find("a").text.strip()
         except AttributeError:
             course_title = "N/A"
+
+        try:
+            # Extract course link
+            course_link = card.find("h5", class_="card-title").find("a")["href"]
+            course_link = f"https://www.myskillsfuture.gov.sg{course_link}"  # Append base URL
+        except (AttributeError, TypeError):
+            course_link = "N/A"
 
         try:
             # Extract upcoming course date
@@ -81,6 +89,7 @@ def scrape_page():
             courses.append({
                 "Institution": institution,
                 "Course Title": course_title,
+                "Link": course_link,
                 "Upcoming Date": upcoming_date,
                 "Duration": duration,
                 "Training Mode": training_mode,
@@ -103,20 +112,17 @@ while True:
         all_courses.extend(courses_on_page)
         print(f"Scraped {len(courses_on_page)} courses on this page.")
 
-        # Locate the "Next" button
-        next_button = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "a.page-link[aria-label='View next page']"))
-        )
-
-        # Debug: Check if the button is visible and clickable
-        if "disabled" in next_button.get_attribute("class"):
-            print("No more pages to scrape. Exiting.")
+        # Check if the "Next" button itself is clickable
+        try:
+            next_button = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "a.page-link[aria-label='View next page']"))
+            )
+            print("Navigating to the next page...")
+            driver.execute_script("arguments[0].click();", next_button)
+            time.sleep(3)  # Wait for the next page to load
+        except:
+            print("The 'Next' button is not clickable, likely disabled. Exiting.")
             break
-
-        # Click the "Next" button
-        print("Navigating to the next page...")
-        driver.execute_script("arguments[0].click();", next_button)
-        time.sleep(3)  # Wait for the next page to load
     except Exception as e:
         print("No more pages or an error occurred:", e)
         break
