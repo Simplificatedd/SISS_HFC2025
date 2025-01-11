@@ -36,11 +36,14 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
-from langchain_community.llms import Ollama
+from langchain_community.llms import ollama
+
+# Model
+from app import MODEL
 
 # Define file paths for the CSV datasets
-CAREERS_CSV_PATH = "/content/sample_data/mycareersfuture_jobs.csv"
-SKILLS_CSV_PATH = "/content/sample_data/skillsfuture_courses.csv"
+CAREERS_CSV_PATH = "dataset/mycareersfuture_jobs.csv"
+SKILLS_CSV_PATH = "dataset/skillsfuture_courses.csv"
 
 # Load data from CSV files
 def load_csv_data(csv_path):
@@ -121,18 +124,51 @@ actor = """You, the AI assistant, act as a guide and advisor. Engage with users 
 
 resources = """Utilize the MyCareersFuture and SkillsFuture datasets, along with FAISS for retrieval and SentenceTransformer for embeddings."""
 
+# , history, faiss_index, chunks, link_column, data
+def answer_question(query, cv_text, mode, history=[], model_name=MODEL, chunks=[], link_column="", data=pd.DataFrame()):
+    """
+    Answers user queries with optional CV context.
+    :param query: The user's query from the text box.
+    :param cv_text: Text extracted from the uploaded CV.
+    :param history: Conversation history for context.
+    :param model_name: Name of the LLM model.
+    :param faiss_index: FAISS index for similarity search.
+    :param chunks: Text chunks associated with the FAISS index.
+    :param link_column: Column in the dataset containing relevant links.
+    :param data: DataFrame containing the dataset.
+    """
 
-def answer_question(query, history, model_name, faiss_index, chunks, link_column, data):
-    llm = Ollama(model=model_name)
+    llm = ollama.Ollama(model=MODEL)
     MAX_HISTORY_LENGTH = 10
     history.append(("User", query))
 
     if len(history) > MAX_HISTORY_LENGTH:
         history = history[-MAX_HISTORY_LENGTH:]
 
+    if "career" not in mode and "skill" not in mode:
+        return history, "I only answer questions related to jobs and courses from MyCareersFuture and SkillsFuture."
+    
+    if "career" in mode:
+        if "skill" not in mode:
+            faiss_index = (careers_faiss_index)
+        else:
+            faiss_index = (careers_faiss_index, skills_faiss_index)
+        chunks += careers_chunks
+        link_column = "Link"
+        data.merge(careers_data)
+    if "skill" in mode:
+        if "career" not in mode:
+            faiss_index = (skills_faiss_index)
+        chunks += skills_chunks
+        link_column = "Link"
+        data.merge(skills_data)
+    
     try:
         model = SentenceTransformer("all-MiniLM-L6-v2")
-        relevant_chunks = search_faiss_index(query, faiss_index, chunks, model)
+
+        combined_query = f"{query} Relevant CV context: {cv_text}" if cv_text else query
+
+        relevant_chunks = search_faiss_index(combined_query, faiss_index, chunks, model)
 
         # Retrieve links corresponding to the chunks
         links = []
@@ -164,7 +200,7 @@ def answer_question(query, history, model_name, faiss_index, chunks, link_column
 if __name__ == "__main__":
     user_query = "What jobs are available in the IT sector?"
     history = []
-    model_name = "phi3"
+    model_name = MODEL
 
     # Use MyCareersFuture FAISS index
     history, response = answer_question(

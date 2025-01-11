@@ -2,3 +2,4 @@ tkinter
 langchain_community
 langchain-ollama
 ollama
+faiss-cpu

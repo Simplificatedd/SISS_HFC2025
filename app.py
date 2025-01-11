@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import filedialog
 import shutil
 import os
+from CV_parser import CvConverter
+import logging
 
 BG = "#84848a"
 BG_COLOR = "#020229"
@@ -11,7 +13,10 @@ FONT = "Helvetica 12"
 FONT_BOLD = "Helvetica 12 bold"
 
 BOT_NAME = "Debbie"
+MODEL = "qwen2.5:3b"
 
+CAREER_KEY = "career", "job", "position", "role", "careers", "jobs", "positions", "roles", "work", "employment", "occupation"
+SKILL_KEY = "skill", "expertise", "technology", "competency", "skills", "expertises", "technologies", "competencies"
 
 class ChatGUI:
     def __init__(self):
@@ -71,10 +76,6 @@ class ChatGUI:
         self.uploaded_file_label = Label(bottom2_frame, bg="#000000", fg=TEXT_COLOR, font=FONT, anchor="w")
         self.uploaded_file_label.pack(side="top", fill="x", expand=True)
 
-
-    '''
-    CV Parser here (docx/pdf to text/tokens), currently placeholder
-    '''
     def _upload_file(self):
         filetypes = [("Word Documents", "*.docx"), ("PDF Files", "*.pdf")]
         filename = filedialog.askopenfilename(filetypes=filetypes, title="Select a File")
@@ -94,38 +95,78 @@ class ChatGUI:
             os.remove(self.uploaded_file_path)
             self.uploaded_file_path = None
         self.uploaded_file_label.config(text="")
+    
+    
 
     def _on_enter_pressed(self, event):
+
         if not self.send_enabled:
             return
-
+        
         if event and event.keysym == 'Return' and (event.state & 0x0001 or event.state & 0x0200):  # Check for Shift key being pressed
             self.msg_entry.insert(END, '\n')
+        
+        textboxtext = self.msg_entry.get("1.0", "end-1c")
+
+        if not textboxtext.strip() and not self.uploaded_file_path:
+            return
+        
         else:
-            msg = self.msg_entry.get("1.0", "end-1c")
-            self._insert_message(msg, "You")
+            mode = []
+            cv_text = ""
+            outputtext = textboxtext
+            combined_text = textboxtext
+
+            if self.uploaded_file_path:
+                try:
+                    converter = CvConverter(self.uploaded_file_path)
+                    cv_text = converter.convert_to_text()
+                    combined_text.append("\n" + cv_text)
+                    outputtext = textboxtext + "\n+ (" + self.uploaded_file_path + ")"
+                except Exception as e:
+                    logging.warning(f"Error converting CV to text: {str(e)}")
+                    return
+            self._insert_message(outputtext, "You")
+
+            if any(keyword in combined_text.lower() for keyword in CAREER_KEY):
+                mode.append("career")
+            elif any(keyword in combined_text.lower() for keyword in SKILL_KEY):
+                mode.append("skill")
+            else:
+                # Default to career data if no match is found
+                mode.append("career")
+
+            # Preventing circular import
+            from main import answer_question
+            # Call the answer_question function with the correct arguments
+            history, response = answer_question(
+                textboxtext,
+                cv_text,
+                mode
+            )
+
+            self._insert_message(response, BOT_NAME)
             self.send_enabled = False  # Disable sending after message is sent
+            return history
 
-
-    '''
-    Output prompt here, currently placeholder
-    '''
     def _insert_message(self, msg, sender):
         if not msg:
             return
-
+        
         self.msg_entry.delete("1.0", END)
-        msg1 = f"{sender}: {msg}\n"
+        output_msg = f"{sender}: {msg}\n"
         self.text_widget.configure(state=NORMAL)
-        self.text_widget.insert(END, msg1)
+        self.text_widget.insert(END, output_msg)
         self.text_widget.configure(state=DISABLED)
 
-        msg2 = f"{BOT_NAME}: {msg}\n"
-        self.text_widget.configure(state=NORMAL)
-        self.text_widget.insert(END, msg2)
-        self.text_widget.configure(state=DISABLED)
-
-        self.text_widget.see(END)
+        def is_at_bottom():
+            # Get the current position of the scrollbar (yview returns a tuple with min and max)
+            _, end_pos = self.text_widget.yview()
+            # If the max value is close to 1 (end), the user is at the bottom
+            return end_pos >= 0.99
+        if is_at_bottom():
+            # Scroll to the end of the text widget
+            self.text_widget.see(END)
 
 
 if __name__ == "__main__":

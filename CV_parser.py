@@ -1,9 +1,35 @@
-from docling.document_converter import DocumentConverter
+class CvConverter:
+    def __init__(self, cv_file):
+        """
+        Initialize the converter with the CV file.
 
-CV_FILE = "CV.docx"
-source = CV_FILE
-converter = DocumentConverter()
-cv_text = converter.convert(source)
-cv_markdown = cv_text.document.export_to_markdown()
+        Args:
+            cv_file (str): The path to the CV document.
+        """
+        self.cv_file = cv_file
 
-# To be continued...
+    def convert_to_text(self):
+        """
+        Convert the CV document to plain text.
+
+        Returns:
+            str: The converted text.
+        """
+        from docling.document_converter import DocumentConverter
+        converter = DocumentConverter()
+        return converter.convert(self.cv_file)
+
+    def export_to_markdown(self, cv_text):
+        """
+        Export the CV text to Markdown format.
+
+        Args:
+            cv_text (str): The plain text of the CV document.
+
+        Returns:
+            str: The Markdown representation of the CV document.
+        """
+
+        from docling.document_converter import DocumentConverter
+        converter = DocumentConverter()
+        return converter.export_to_markdown(cv_text)
