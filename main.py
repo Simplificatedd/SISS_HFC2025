@@ -109,12 +109,13 @@ print("Data processing and FAISS index creation complete.")
 context = """
 You are an AI assistant designed to answer questions about job opportunities from MyCareersFuture and courses from SkillsFuture. Your goal is to provide accurate, relevant, and concise answers based on the datasets.
 
-If a question falls outside the domain of jobs or courses, politely respond with: "I only answer questions related to jobs and courses from MyCareersFuture and SkillsFuture." Always maintain a professional and educational tone.
+If a question falls outside the domain of jobs or courses, politely decline to answer by using a single sentence as your response. Always maintain a professional and educational tone.
 """
 
-outcome = """1. If the user asks a question about jobs or courses, focus on providing relevant information by extracting context from the datasets.
-2. Include useful links where the user can find detailed information about jobs or courses.
-3. Conclude with a follow-up question that encourages exploration of related opportunities or courses."""
+outcome = """1. Your main directive is to provide the top 3 jobs or courses from the datasets that would fit the user's portfolio or requests, please also provide the url link to the top 3 jobs or courses.
+2. If the user asks a question about jobs or courses, focus on providing relevant information by extracting context from the datasets.
+3. Include useful links where the user can find detailed information about jobs or courses.
+4. Conclude with a follow-up question that encourages exploration of related opportunities or courses."""
 
 scale = """Adapt responses based on the complexity of the user's queries. For beginners, provide straightforward answers. For advanced users, include additional insights such as job market trends or course recommendations."""
 
@@ -124,7 +125,6 @@ actor = """You, the AI assistant, act as a guide and advisor. Engage with users 
 
 resources = """Utilize the MyCareersFuture and SkillsFuture datasets, along with FAISS for retrieval and SentenceTransformer for embeddings."""
 
-# , history, faiss_index, chunks, link_column, data
 def answer_question(query, cv_text, mode, history=[], model_name=MODEL, chunks=[], link_column="", data=pd.DataFrame()):
     """
     Answers user queries with optional CV context.
@@ -149,19 +149,15 @@ def answer_question(query, cv_text, mode, history=[], model_name=MODEL, chunks=[
         return history, "I only answer questions related to jobs and courses from MyCareersFuture and SkillsFuture."
     
     if "career" in mode:
-        if "skill" not in mode:
-            faiss_index = (careers_faiss_index)
-        else:
-            faiss_index = (careers_faiss_index, skills_faiss_index)
-        chunks += careers_chunks
+        faiss_index = careers_faiss_index
+        chunks = careers_chunks
         link_column = "Link"
-        data.merge(careers_data)
+        data = careers_data
     if "skill" in mode:
-        if "career" not in mode:
-            faiss_index = (skills_faiss_index)
+        faiss_index = skills_faiss_index
         chunks += skills_chunks
         link_column = "Link"
-        data.merge(skills_data)
+        data = skills_data
     
     try:
         model = SentenceTransformer("all-MiniLM-L6-v2")

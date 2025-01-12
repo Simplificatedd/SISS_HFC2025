@@ -32,4 +32,4 @@ class CvConverter:
 
         from docling.document_converter import DocumentConverter
         converter = DocumentConverter()
-        return converter.export_to_markdown(cv_text)
+        return cv_text.document.export_to_markdown()
