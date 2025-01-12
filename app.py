@@ -81,12 +81,12 @@ class ChatGUI:
 
     def _upload_file(self):
         filetypes = [("Word Documents", "*.docx"), ("PDF Files", "*.pdf")]
-        filename = filedialog.askopenfilename(filetypes=filetypes, title="Select a File")
-        if filename:
+        self.filename = filedialog.askopenfilename(filetypes=filetypes, title="Select a File")
+        if self.filename:
             # Copy the file to placeholder location
-            file_basename = os.path.basename(filename)
+            file_basename = os.path.basename(self.filename)
             dest_path = os.path.join(os.getcwd(), file_basename)
-            shutil.copy(filename, dest_path)
+            shutil.copy(self.filename, dest_path)
 
             # Store path and update file label and enable deletion
             self.uploaded_file_path = dest_path
@@ -116,6 +116,7 @@ class ChatGUI:
         outputtext = textboxtext
         combined_text = textboxtext
         cv_text = ""
+        cv_markdown = ""
 
         if not hasattr(self, 'mode') or not self.mode:
             self._insert_message(textboxtext, "You")
@@ -145,7 +146,7 @@ class ChatGUI:
                 cv_text = converter.convert_to_text()
                 cv_markdown = CvConverter.export_to_markdown(self,cv_text)
                 combined_text += "\n" + cv_markdown
-                outputtext = textboxtext + "\n+ (" + self.uploaded_file_path + ")"
+                outputtext = textboxtext + "\n+ (" + self.filename + ")"
             except Exception as e:
                 logging.warning(f"Error converting CV to text: {str(e)}")
                 return
