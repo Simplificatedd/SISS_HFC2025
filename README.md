@@ -56,7 +56,7 @@ pip install -r requirements.txt
 ## Usage Guide
 ### 1. Run the Application
 
-Start the main application:
+Start the application:
 
 ```bash
 python app.py
