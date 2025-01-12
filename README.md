@@ -2,13 +2,28 @@
 Submission for Hack For Cities 2025
 Team Name: Singapore Institute of Social Sciences
 
-## Project Description
+## Project Description  
 
-Fresh graduates with limited internship experience and mid-career switchers without relevant expertise often face challenges in identifying the most suitable courses to develop industry-specific skills efficiently. They are uncertain about which courses will equip them with the most relevant skills in the shortest time to improve their employability. 
+### Overview  
+This project proposes an AI-driven solution to bridge the gap between workforce development and the evolving demands of smart city industries. By leveraging a Retrieval-Augmented Generation (RAG) system integrated with Generative AI, the solution aims to deliver personalised career assistance and skill development recommendations.  
 
-This project addresses this issue by leveraging Generative AI to create an intelligent chatbot. The chatbot analyzes user-provided data, such as resumes or career goals, and suggests tailored courses from SkillsFuture to help users upskill effectively. 
+The core of the solution is a chatbot that analyses user resumes to extract skills, qualifications, and experiences. It connects users with relevant job opportunities and upskilling courses by utilizing datasets from **CareersFuture** and **SkillsFuture Singapore**. The chatbot also addresses career-related inquiries, offering tailored advice to help users adapt to the dynamic needs of smart city enterprises.  
 
-Upon completion of a recommended course, the chatbot continues its support by providing personalized job listings from CareersFuture, bridging the gap between education and employment. This solution ensures a seamless and guided journey for users, helping them transition into their desired careers with confidence.
+### Problem it Solves  
+In rapidly evolving industries, individuals often struggle with:  
+- Identifying skill gaps and relevant job opportunities.  
+- Accessing personalised career guidance.  
+- Adapting to the skill demands of smart city economies.  
+
+Governments face challenges in aligning workforce capabilities with industry requirements to promote sustainable economic growth and reduce unemployment.  
+
+This solution directly addresses these challenges by:  
+1. Enabling individuals to understand their current capabilities and map them to industry needs.  
+2. Guiding users towards targeted skill development using SkillsFuture courses.  
+3. Assisting governments in workforce alignment efforts, fostering long-term growth and innovation.  
+
+By empowering citizens with career tools tailored to a smart city context, this project contributes to a more adaptive and future-ready workforce.  
+
 
 ---
 
