@@ -29,6 +29,60 @@ By empowering citizens with career tools tailored to a smart city context, this 
 
 ## Setup Instructions
 Step-by-step guide to run the project, including dependencies, configurations, etc.
+Certainly! Here's the step-by-step guide to run the project, formatted in Markdown:
+
+```markdown
+# Project Setup Guide
+
+Follow these steps to set up and run the project:
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/Simplificatedd/SISS_HFC2025.git
+cd SISS_HFC2025
+```
+
+## 2. Set Up a Virtual Environment (Optional but Recommended)
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+## 3. Install Dependencies
+
+Ensure you have `pip` installed. Then, install the required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+## 4. Run the Application
+
+Start the main application:
+
+```bash
+python main.py
+```
+
+
+## 5. Using the Application
+
+- **Resume Parsing**:
+  - Upload your resume through the chatbot interface.
+  - The system will extract your skills and qualifications.
+
+- **Job Recommendations**:
+  - Based on your extracted skills, the chatbot will recommend relevant job opportunities from the CareersFuture dataset.
+
+- **Course Recommendations**:
+  - The chatbot will suggest SkillsFuture courses to address any identified skill gaps.
+
+- **Career Inquiries**:
+  - Ask the chatbot any career-related questions for personalized advice.
+
+
 
 ---
 
