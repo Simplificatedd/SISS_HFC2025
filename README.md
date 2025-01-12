@@ -3,6 +3,7 @@ Submission for Hack For Cities 2025
 Team Name: Singapore Institute of Social Sciences
 
 ## Project Description  
+Overview of the solution and the problem it solves
 
 ### Overview  
 This project proposes an AI-driven solution to bridge the gap between workforce development and the evolving demands of smart city industries. By leveraging a Retrieval-Augmented Generation (RAG) system integrated with Generative AI, the solution aims to deliver personalised career assistance and skill development recommendations.  
@@ -29,12 +30,6 @@ By empowering citizens with career tools tailored to a smart city context, this 
 
 ## Setup Instructions
 Step-by-step guide to run the project, including dependencies, configurations, etc.
-Certainly! Here's the step-by-step guide to run the project, formatted in Markdown:
-
-```markdown
-# Project Setup Guide
-
-Follow these steps to set up and run the project:
 
 ## 1. Clone the Repository
 
