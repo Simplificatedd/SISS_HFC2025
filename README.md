@@ -31,21 +31,21 @@ By empowering citizens with career tools tailored to a smart city context, this 
 ## Setup Instructions
 Step-by-step guide to run the project, including dependencies, configurations, etc.
 
-## 1. Clone the Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Simplificatedd/SISS_HFC2025.git
 cd SISS_HFC2025
 ```
 
-## 2. Set Up a Virtual Environment (Optional but Recommended)
+### 2. Set Up a Virtual Environment (Optional but Recommended)
 
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-## 3. Install Dependencies
+### 3. Install Dependencies
 
 Ensure you have `pip` installed. Then, install the required packages:
 
@@ -53,7 +53,7 @@ Ensure you have `pip` installed. Then, install the required packages:
 pip install -r requirements.txt
 ```
 
-## 4. Run the Application
+### 4. Run the Application
 
 Start the main application:
 
@@ -62,7 +62,7 @@ python main.py
 ```
 
 
-## 5. Using the Application
+### 5. Using the Application
 
 - **Resume Parsing**:
   - Upload your resume through the chatbot interface.
