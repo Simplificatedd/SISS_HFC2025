@@ -63,7 +63,9 @@ python app.py
 ```
 
 ### 2. Using the Application
-
+- **Chatbot will ask if you'd prefer Career or Course recommendations**:
+  - Respond to the chatbot by saying if you'd prefer career or course recommendations.
+  - After every course or career recommendation by the chatbot, you have to tell the bot if you'd like to be recommended courses or careers again.
 - **Resume Parsing**:
   - Upload your resume through the chatbot interface.
   - The system will extract your skills and qualifications.
