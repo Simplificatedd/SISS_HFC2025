@@ -75,7 +75,7 @@ python main.py
   - The chatbot will suggest SkillsFuture courses to address any identified skill gaps.
 
 - **Career Inquiries**:
-  - Ask the chatbot any career-related questions for personalized advice, such as "What jobs would suit me?".
+  - Ask the chatbot any career-related questions for personalized advice, such as "What courses should I take to boost my resume?".
 
 
 ---
