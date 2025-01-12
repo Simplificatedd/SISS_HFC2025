@@ -3,7 +3,6 @@ Submission for Hack For Cities 2025
 Team Name: Singapore Institute of Social Sciences
 
 ## Project Description  
-Overview of the solution and the problem it solves
 
 ### Overview  
 This project proposes an AI-driven solution to bridge the gap between workforce development and the evolving demands of smart city industries. By leveraging a Retrieval-Augmented Generation (RAG) system integrated with Generative AI, the solution aims to deliver personalised career assistance and skill development recommendations.  
@@ -29,7 +28,6 @@ By empowering citizens with career tools tailored to a smart city context, this 
 ---
 
 ## Setup Instructions
-Step-by-step guide to run the project, including dependencies, configurations, etc.
 
 ### 1. Clone the Repository
 
@@ -53,7 +51,10 @@ Ensure you have `pip` installed. Then, install the required packages:
 pip install -r requirements.txt
 ```
 
-### 4. Run the Application
+---
+
+## Usage Guide
+### 1. Run the Application
 
 Start the main application:
 
@@ -61,8 +62,7 @@ Start the main application:
 python main.py
 ```
 
-
-### 5. Using the Application
+### 2. Using the Application
 
 - **Resume Parsing**:
   - Upload your resume through the chatbot interface.
@@ -75,19 +75,8 @@ python main.py
   - The chatbot will suggest SkillsFuture courses to address any identified skill gaps.
 
 - **Career Inquiries**:
-  - Ask the chatbot any career-related questions for personalized advice.
+  - Ask the chatbot any career-related questions for personalized advice, such as "What courses should I take to boost my resume?".
 
-
-
----
-
-## Usage Guide
-Instructions on how to test or use the solution, with examples.
-
----
-
-## Deployment Instructions (if applicable)
-Steps to deploy the solution.
 
 ---
 
@@ -102,5 +91,11 @@ Steps to deploy the solution.
 ---
 
 ## Additional Notes
-Any limitations or future improvements to the project.
+
+Limitations:
+- The project may have limitations based on the dataset used and the implemented functionalities.
+  
+Future Improvements:
+- Enhance the application's features based on user feedback.
+- Update dependencies regularly to incorporate the latest improvements and security patches.
 
