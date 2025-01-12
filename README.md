@@ -53,7 +53,12 @@ Ensure you have `pip` installed. Then, install the required packages:
 pip install -r requirements.txt
 ```
 
-### 4. Run the Application
+
+
+---
+
+## Usage Guide
+### 1. Run the Application
 
 Start the main application:
 
@@ -61,8 +66,7 @@ Start the main application:
 python main.py
 ```
 
-
-### 5. Using the Application
+### 2. Using the Application
 
 - **Resume Parsing**:
   - Upload your resume through the chatbot interface.
@@ -76,13 +80,6 @@ python main.py
 
 - **Career Inquiries**:
   - Ask the chatbot any career-related questions for personalized advice.
-
-
-
----
-
-## Usage Guide
-Instructions on how to test or use the solution, with examples.
 
 ---
 
