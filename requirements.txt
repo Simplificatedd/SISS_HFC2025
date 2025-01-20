@@ -6,3 +6,5 @@ sentence_transformers
 numpy
 pandas
 pymupdf
+flask
+flask_cors
