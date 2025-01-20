@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 import "../styles/chatbot.css";
 
@@ -8,6 +8,7 @@ const Chatbot = () => {
   const [file, setFile] = useState(null);
   const [mode, setMode] = useState("career");
   const [isTyping, setIsTyping] = useState(false);
+  const fileInputRef = useRef(null); // Reference to the file input element
 
   const handleSend = async () => {
     if (!input.trim() && !file) return;
@@ -44,11 +45,17 @@ const Chatbot = () => {
   };
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+    }
   };
 
   const handleFileRemove = () => {
-    setFile(null);
+    setFile(null); // Clear the file state
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Reset the file input element
+    }
   };
 
   const toggleMode = () => {
@@ -105,6 +112,7 @@ const Chatbot = () => {
               type="file"
               onChange={handleFileChange}
               className="chatbot-file-input"
+              ref={fileInputRef} // Reference to the file input
             />
           </label>
           <input

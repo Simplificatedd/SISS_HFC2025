@@ -34,9 +34,9 @@ def chat():
             try:
                 converter = CvConverter(filepath)
                 cv_text = converter.convert_to_text()
+                
             except Exception:
                 return jsonify({"response": "Error processing CV.", "status": "error"}), 500
-
         # Get the response
         history, response = answer_question(
             query=message,
