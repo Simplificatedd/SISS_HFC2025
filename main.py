@@ -149,10 +149,13 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL, chunks=[], 
             faiss_index = careers_faiss_index
             chunks = careers_chunks
             data = careers_data
+            link_column = "Link" 
+
         elif "skill" in mode:
             faiss_index = skills_faiss_index
             chunks = skills_chunks
             data = skills_data
+            link_column = "Link" 
 
         relevant_chunks = search_faiss_index(
             query=combined_query,
@@ -162,7 +165,21 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL, chunks=[], 
             k=5,  # Retrieve top 5 results
             diversity_threshold=0.8  # Minimum diversity threshold for cosine similarity
         )
-        combined_chunks = "\n".join(relevant_chunks)
+
+        query_embedding = model.encode([query + cv_text], convert_to_tensor=False)
+        distances, indices = faiss_index.search(np.array(query_embedding), k=3)
+        # Map chunks to original dataset rows
+        links = []
+
+        for i in indices[0]:
+            if i < len(data):  # Ensure index is within bounds
+                row = data.iloc[i]
+                # results.append(chunks[i])
+                links.append(row.get(link_column, "No link available"))
+
+        # Combine chunks with links
+        combined_chunks = "\n".join([f"{chunk}\nLink: {link}" for chunk, link in zip(relevant_chunks, links)])
+
 
         # Add context to the prompt
         prompt = (
@@ -192,7 +209,7 @@ if __name__ == "__main__":
         model_name,
         careers_faiss_index,
         careers_chunks,
-        link_column="Link",
+        # link_column="Link",
         data=careers_data
     )
     print(response)
@@ -204,7 +221,7 @@ if __name__ == "__main__":
         model_name,
         skills_faiss_index,
         skills_chunks,
-        link_column="Link",
+        # link_column="Link",
         data=skills_data
     )
     print(response)
