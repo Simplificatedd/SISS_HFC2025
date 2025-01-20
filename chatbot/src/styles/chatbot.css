@@ -139,6 +139,18 @@ input:checked+.slider:before {
     font-size: 14px;
 }
 
+.chatbot-message a {
+    color: #007bff; /* Bright blue color for links */
+    font-weight: bold; /* Makes the links bold for better visibility */
+    text-decoration: underline; /* Adds underline to make it clear it's a link */
+}
+
+.chatbot-message a:hover {
+    color: #0056b3; /* Slightly darker blue when hovered */
+    text-decoration: none; /* Removes underline on hover for a clean effect */
+}
+
+
 /* User Message Bubble */
 .user-message {
     background-color: #007bff;

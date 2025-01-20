@@ -11,7 +11,10 @@ const Chatbot = () => {
   const fileInputRef = useRef(null); // Reference to the file input element
 
   const handleSend = async () => {
-    if (!input.trim() && !file) return;
+    if (!input.trim() && !file) {
+      setMessages([...messages, { sender: "Bot", text: "Please upload your resume before continuing." }]);
+      return;
+    }
 
     const newMessages = [...messages, { sender: "You", text: input || "Uploaded resume." }];
     setMessages(newMessages);
@@ -46,9 +49,15 @@ const Chatbot = () => {
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
+
+    // Validate file type (only PDF)
+    if (selectedFile && selectedFile.type !== "application/pdf") {
+      setMessages([...messages, { sender: "Bot", text: "Only PDF files are allowed. Please upload a valid file." }]);
+      fileInputRef.current.value = ""; // Reset the file input
+      return;
     }
+
+    setFile(selectedFile);
   };
 
   const handleFileRemove = () => {
@@ -80,7 +89,11 @@ const Chatbot = () => {
       <div className="chatbot-messages">
         {messages.map((msg, index) => (
           <div key={index} className={`chatbot-message ${msg.sender === "You" ? "user-message" : "bot-message"}`}>
-            {msg.text}
+            {msg.sender === "Bot" ? (
+              <div dangerouslySetInnerHTML={{ __html: msg.text }} />
+            ) : (
+              msg.text
+            )}
           </div>
         ))}
         {isTyping && (
@@ -94,7 +107,6 @@ const Chatbot = () => {
         )}
       </div>
       <div className="chatbot-input-container">
-        {/* File Upload Section */}
         {file && (
           <div className="file-uploaded">
             {file.name}{" "}
@@ -103,8 +115,6 @@ const Chatbot = () => {
             </button>
           </div>
         )}
-
-        {/* Input Bar */}
         <div className="chatbot-input-bar">
           <label className="chatbot-attach-button">
             +
@@ -112,7 +122,7 @@ const Chatbot = () => {
               type="file"
               onChange={handleFileChange}
               className="chatbot-file-input"
-              ref={fileInputRef} // Reference to the file input
+              ref={fileInputRef}
             />
           </label>
           <input

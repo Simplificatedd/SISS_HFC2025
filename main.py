@@ -5,12 +5,12 @@ import faiss
 import numpy as np
 from langchain_ollama import OllamaLLM
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+
+# Disable parallelism for tokenizers
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-
-# Model
-from config import MODEL 
+# Model configuration
+from config import MODEL
 
 # Define file paths for the CSV datasets
 CAREERS_CSV_PATH = "dataset/mycareersfuture_jobs.csv"
@@ -20,12 +20,12 @@ SKILLS_CSV_PATH = "dataset/skillsfuture_courses.csv"
 def load_csv_data(csv_path):
     return pd.read_csv(csv_path)
 
-# Step 1: Extract text from CSV data for embeddings
+# Extract text for embeddings
 def extract_text_from_csv(data, text_columns):
-    combined_text = data[text_columns].fillna("").apply(" ".join, axis=1)
+    combined_text = data[text_columns].fillna(" ").apply(" ".join, axis=1)
     return combined_text.tolist()
 
-# Step 2: Chunk the text for efficient retrieval (optional for large datasets)
+# Chunk the text for efficient retrieval
 def chunk_text(text_list, chunk_size=1000, overlap=200):
     chunks = []
     for text in text_list:
@@ -33,39 +33,26 @@ def chunk_text(text_list, chunk_size=1000, overlap=200):
             chunks.append(text[i:i + chunk_size])
     return chunks
 
-# Step 3: Create embeddings for each chunk using SentenceTransformer
+# Create embeddings using SentenceTransformer
 def create_embeddings(chunks):
     model = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = model.encode(chunks, convert_to_tensor=False)
     return np.array(embeddings)
 
-# Step 4: Build FAISS index
+# Build FAISS index
 def build_faiss_index(embeddings):
     dimension = embeddings.shape[1]
     index = faiss.IndexFlatL2(dimension)
     index.add(embeddings)
     return index
 
-# Step 5: Search for relevant chunks in FAISS index
+# Search FAISS index with relevance and diversity
 def search_faiss_index(query, faiss_index, chunks, model, k=5, diversity_threshold=0.8):
-    """
-    Enhanced function to search FAISS index with better relevance and diversity.
-    :param query: The user query as a string.
-    :param faiss_index: The FAISS index.
-    :param chunks: The text chunks corresponding to the index.
-    :param model: The embedding model (e.g., SentenceTransformer).
-    :param k: Number of results to retrieve.
-    :param diversity_threshold: Minimum cosine similarity between results for diversity.
-    :return: List of relevant and diverse chunks.
-    """
-    # Generate embedding for the query
     query_embedding = model.encode([query], convert_to_tensor=False)
-    
-    # Search FAISS index
-    D, I = faiss_index.search(np.array(query_embedding), k * 2)  # Retrieve more results initially for diversity
+    D, I = faiss_index.search(np.array(query_embedding), k * 2)
 
-    # Filter results for diversity
     selected_chunks = []
+    selected_indices = []
     selected_embeddings = []
 
     for idx in I[0]:
@@ -73,141 +60,157 @@ def search_faiss_index(query, faiss_index, chunks, model, k=5, diversity_thresho
             break
         chunk = chunks[idx]
         chunk_embedding = model.encode([chunk], convert_to_tensor=False)
-        
-        # Check for diversity: compare with already selected chunks
         if all(cosine_similarity(
-                np.atleast_2d(chunk_embedding), 
-                np.atleast_2d(e))[0][0] < diversity_threshold for e in selected_embeddings):
+            np.atleast_2d(chunk_embedding), 
+            np.atleast_2d(e))[0][0] < diversity_threshold for e in selected_embeddings):
             selected_chunks.append(chunk)
+            selected_indices.append(idx)
             selected_embeddings.append(chunk_embedding)
-    
-    # If diversity filtering reduces results, fallback to the most similar ones
+
     if len(selected_chunks) < k:
         for idx in I[0][len(selected_chunks):k]:
             selected_chunks.append(chunks[idx])
+            selected_indices.append(idx)
 
-    return selected_chunks
+    return selected_chunks, selected_indices
 
-
-
-# Load and process datasets
+# Load datasets
 careers_data = load_csv_data(CAREERS_CSV_PATH)
 skills_data = load_csv_data(SKILLS_CSV_PATH)
 
-# Specify columns to use for embeddings
+# Extract and process text for embeddings
 careers_text_columns = ["Job Title", "Company", "Location", "Employment Type", "Salary"]
 skills_text_columns = ["Institution", "Course Title", "Upcoming Date", "Duration", "Training Mode", "Full Fee", "Funded Fee"]
 
-# Extract text and create embeddings for MyCareersFuture
 careers_text = extract_text_from_csv(careers_data, careers_text_columns)
-careers_chunks = chunk_text(careers_text)
-careers_embeddings = create_embeddings(careers_chunks)
-careers_faiss_index = build_faiss_index(careers_embeddings)
-
-# Extract text and create embeddings for SkillsFuture
 skills_text = extract_text_from_csv(skills_data, skills_text_columns)
+
+careers_chunks = chunk_text(careers_text)
 skills_chunks = chunk_text(skills_text)
+
+careers_embeddings = create_embeddings(careers_chunks)
 skills_embeddings = create_embeddings(skills_chunks)
+
+careers_faiss_index = build_faiss_index(careers_embeddings)
 skills_faiss_index = build_faiss_index(skills_embeddings)
 
 print("Data processing and FAISS index creation complete.")
 
-
-# CO-STAR Framework Components
+# CO-STAR Framework
 context = """
-You are an AI assistant designed to answer questions about job opportunities from MyCareersFuture and courses from SkillsFuture. Your goal is to provide accurate, relevant, and concise answers based on the datasets.
-
-If a question falls outside the domain of jobs or courses, politely decline to answer by using a single sentence as your response. Always maintain a professional and educational tone.
+You are an AI assistant designed to answer questions about job opportunities from MyCareersFuture and courses from SkillsFuture. Your primary goal is to directly answer the user's question accurately and concisely. If the question relates to job or course recommendations, provide the most relevant options.
+If a question falls outside the domain of jobs or courses, politely decline to answer using a single sentence.
 """
 
-outcome = """1. Your main directive is to provide the top 3 jobs or courses from the retrieved context that would fit the user's portfolio or requests. 
-2. Include the appropriate links for those jobs or courses.
-3. Always state the Job Title or Course Title clearly.
-4. Conclude with a follow-up question that encourages exploration of related opportunities or courses."""
+outcome = """
+1. Directly answer the user's question based on the provided information.
+2. Conclude with a follow-up question to encourage further exploration.
+"""
 
-scale = """Adapt responses based on the complexity of the user's queries. For beginners, provide straightforward answers. For advanced users, include additional insights such as job market trends or course recommendations."""
+scale = """
+Adapt responses based on the complexity of the query. Provide simple answers for beginners and deeper insights for advanced users.
+"""
 
-time = """Keep each response concise and to the point. Provide enough information to answer the user's question but avoid overwhelming them with unnecessary details."""
+time = """
+Keep responses concise and relevant to avoid overwhelming the user.
+"""
 
-actor = """You, the AI assistant, act as a guide and advisor. 
-Engage with users by asking follow-up questions, providing clarifications, and offering actionable recommendations."""
+actor = """
+You act as a guide, providing tailored advice and follow-up suggestions to help users achieve their goals.
+"""
 
-resources = """You have been provided context from the MyCareersFuture and SkillsFuture datasets. 
-Base your answers on the information within this context only. 
-If the context does not provide enough details, politely indicate that you cannot find the information."""
-
-def answer_question(query, cv_text, mode, history, model_name=MODEL, chunks=[], link_column="", data=pd.DataFrame()):
+resources = """
+Base your answers on the MyCareersFuture and SkillsFuture datasets. If sufficient information is unavailable, inform the user.
+"""
+def answer_question(query, cv_text, mode, history, model_name=MODEL):
     llm = OllamaLLM(model=MODEL)
     MAX_HISTORY_LENGTH = 10
 
-    # Limit conversation history
     if len(history) > MAX_HISTORY_LENGTH:
         history = history[-MAX_HISTORY_LENGTH:]
 
     try:
         model = SentenceTransformer("all-MiniLM-L6-v2")
-        combined_query = f"{query} Relevant CV context: {cv_text}" if cv_text else query
+        combined_query = f"""
+        The user has uploaded a resume with the following details:
+        {cv_text}
+        
+        The user has asked the following question:
+        {query}
+        """
 
+        # Determine dataset and fields based on mode
         if "career" in mode:
             faiss_index = careers_faiss_index
             chunks = careers_chunks
             data = careers_data
+            fields = ["Job Title", "Company", "Location", "Salary", "Link"]
         elif "skill" in mode:
             faiss_index = skills_faiss_index
             chunks = skills_chunks
             data = skills_data
+            fields = ["Course Title", "Institution", "Duration", "Link"]
 
-        relevant_chunks = search_faiss_index(
+        relevant_chunks, relevant_indices = search_faiss_index(
             query=combined_query,
             faiss_index=faiss_index,
             chunks=chunks,
             model=model,
-            k=5,  # Retrieve top 5 results
-            diversity_threshold=0.8  # Minimum diversity threshold for cosine similarity
-        )
-        combined_chunks = "\n".join(relevant_chunks)
-
-        # Add context to the prompt
-        prompt = (
-            context + outcome + scale + time + actor + resources +
-            "\nConversation History:\n" +
-            "\n".join([f"{sender}: {message}" for sender, message in history]) +
-            f"\n\nRelevant Context:\n{combined_chunks}\n\nQuestion: {query}"
+            k=5
         )
 
-        response = llm(prompt)
-        history.append(("Chatbot", response))
+        # Fetch job/course details
+        job_details = []
+        for idx in relevant_indices[:3]:
+            row = data.iloc[idx]
+            details = {field: row.get(field, "N/A") for field in fields}
+            details["title"] = f"<a href='{details.get('Link', '#')}' target='_blank'>{details.get('Course Title' if 'skill' in mode else 'Job Title')}</a>"
+            job_details.append(details)
 
-        return history, response
+        # Build the first paragraph with hyperlinks embedded
+        if "career" in mode:
+            first_paragraph = (
+                f"Based on your background and career goals, here are some opportunities that match your skills and experience: "
+                f"{job_details[0]['title']} at {job_details[0]['Company']} (Location: {job_details[0]['Location']}, Salary: {job_details[0]['Salary']}), "
+                f"{job_details[1]['title']} at {job_details[1]['Company']} (Location: {job_details[1]['Location']}, Salary: {job_details[1]['Salary']}), and "
+                f"{job_details[2]['title']} at {job_details[2]['Company']} (Location: {job_details[2]['Location']}, Salary: {job_details[2]['Salary']})."
+            )
+        elif "skill" in mode:
+            first_paragraph = (
+                f"Based on your background and career goals, here are some courses that match your interests and experience: "
+                f"{job_details[0]['title']} by {job_details[0]['Institution']} (Duration: {job_details[0]['Duration']}), "
+                f"{job_details[1]['title']} by {job_details[1]['Institution']} (Duration: {job_details[1]['Duration']}), and "
+                f"{job_details[2]['title']} by {job_details[2]['Institution']} (Duration: {job_details[2]['Duration']})."
+            )
+
+        # Generate additional insights for why these are a good fit
+        additional_insights = llm(
+            f"""
+            {context}
+            {outcome}
+            {scale}
+            {time}
+            {actor}
+            {resources}
+            
+            User's Resume:
+            {cv_text}
+
+            Relevant Context:
+            {" ".join(relevant_chunks)}
+
+            User's Question:
+            {query}
+
+            Explain briefly why these specific opportunities (jobs or courses) are a good fit for the user's skills and career goals.
+            """
+        )
+
+        # Combine into one final response
+        final_response = f"{first_paragraph}<br><br>{additional_insights}"
+
+        history.append(("Chatbot", final_response))
+        return history, final_response  # Return combined response
+
     except Exception as e:
         return history, f"Error: {str(e)}"
-
-
-if __name__ == "__main__":
-    user_query = "What jobs are available in the IT sector?"
-    history = []
-    model_name = MODEL
-
-    # Use MyCareersFuture FAISS index
-    history, response = answer_question(
-        user_query,
-        history,
-        model_name,
-        careers_faiss_index,
-        careers_chunks,
-        link_column="Link",
-        data=careers_data
-    )
-    print(response)
-
-    user_query = "What courses are available for data analytics?"
-    history, response = answer_question(
-        user_query,
-        history,
-        model_name,
-        skills_faiss_index,
-        skills_chunks,
-        link_column="Link",
-        data=skills_data
-    )
-    print(response)
