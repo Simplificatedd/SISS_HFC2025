@@ -183,7 +183,17 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL):
                 f"{job_details[2]['title']} by {job_details[2]['Institution']} (Duration: {job_details[2]['Duration']})."
             )
 
-        # Generate additional insights for why these are a good fit
+        # Generate additional insights using retrieved details
+        detailed_context = "\n".join(
+            [
+                f"{details['title']} at {details['Company']} (Location: {details['Location']}, Salary: {details['Salary']})"
+                if "career" in mode
+                else f"{details['title']} by {details['Institution']} (Duration: {details['Duration']})"
+                for details in job_details
+            ]
+        )
+
+        # Update the LLM prompt to explicitly use direct addressing
         additional_insights = llm(
             f"""
             {context}
@@ -197,12 +207,12 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL):
             {cv_text}
 
             Relevant Context:
-            {" ".join(relevant_chunks)}
+            {detailed_context}
 
             User's Question:
             {query}
 
-            Explain briefly why these specific opportunities (jobs or courses) are a good fit for the user's skills and career goals.
+            Explain why these specific opportunities are a good fit for you and your career goals. Avoid referring to the user in the third person. Use 'you' and 'your' throughout the explanation.
             """
         )
 

@@ -17,16 +17,14 @@ body {
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    width: 90vh;
+    width: 130vh; 
     height: 80vh;
     padding: 30px;
-    /* Padding is included in total size */
     background-color: #1e1e1e;
     border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     overflow: hidden;
     box-sizing: border-box;
-    /* Include padding in width/height */
 }
 
 
