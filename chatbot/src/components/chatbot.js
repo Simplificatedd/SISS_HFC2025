@@ -88,9 +88,18 @@ const Chatbot = () => {
       </header>
       <div className="chatbot-messages">
         {messages.map((msg, index) => (
-          <div key={index} className={`chatbot-message ${msg.sender === "You" ? "user-message" : "bot-message"}`}>
+          <div
+            key={index}
+            className={`chatbot-message ${msg.sender === "You" ? "user-message" : "bot-message"
+              }`}
+          >
             {msg.sender === "Bot" ? (
-              <div dangerouslySetInnerHTML={{ __html: msg.text }} />
+              // Ensure the HTML with hyperlinks is rendered
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: msg.text, // Render the HTML content
+                }}
+              />
             ) : (
               msg.text
             )}
@@ -106,6 +115,9 @@ const Chatbot = () => {
           </div>
         )}
       </div>
+
+
+
       <div className="chatbot-input-container">
         {file && (
           <div className="file-uploaded">

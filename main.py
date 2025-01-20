@@ -5,6 +5,7 @@ import faiss
 import numpy as np
 from langchain_ollama import OllamaLLM
 from sklearn.metrics.pairwise import cosine_similarity
+import re
 
 # Disable parallelism for tokenizers
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -160,41 +161,27 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL):
         )
 
         # Fetch job/course details
-        job_details = []
+        details_list = []
         for idx in relevant_indices[:3]:
             row = data.iloc[idx]
             details = {field: row.get(field, "N/A") for field in fields}
-            details["title"] = f"<a href='{details.get('Link', '#')}' target='_blank'>{details.get('Course Title' if 'skill' in mode else 'Job Title')}</a>"
-            job_details.append(details)
-
-        # Build the first paragraph with hyperlinks embedded
-        if "career" in mode:
-            first_paragraph = (
-                f"Based on your background and career goals, here are some opportunities that match your skills and experience: "
-                f"{job_details[0]['title']} at {job_details[0]['Company']} (Location: {job_details[0]['Location']}, Salary: {job_details[0]['Salary']}), "
-                f"{job_details[1]['title']} at {job_details[1]['Company']} (Location: {job_details[1]['Location']}, Salary: {job_details[1]['Salary']}), and "
-                f"{job_details[2]['title']} at {job_details[2]['Company']} (Location: {job_details[2]['Location']}, Salary: {job_details[2]['Salary']})."
+            details["hyperlink"] = (
+                f"<a href='{details.get('Link', '#')}' target='_blank'>{details.get('Course Title' if 'skill' in mode else 'Job Title')}</a>"
             )
-        elif "skill" in mode:
-            first_paragraph = (
-                f"Based on your background and career goals, here are some courses that match your interests and experience: "
-                f"{job_details[0]['title']} by {job_details[0]['Institution']} (Duration: {job_details[0]['Duration']}), "
-                f"{job_details[1]['title']} by {job_details[1]['Institution']} (Duration: {job_details[1]['Duration']}), and "
-                f"{job_details[2]['title']} by {job_details[2]['Institution']} (Duration: {job_details[2]['Duration']})."
-            )
+            details_list.append(details)
 
-        # Generate additional insights using retrieved details
+        # Prepare a detailed context for the LLM
         detailed_context = "\n".join(
             [
-                f"{details['title']} at {details['Company']} (Location: {details['Location']}, Salary: {details['Salary']})"
-                if "career" in mode
-                else f"{details['title']} by {details['Institution']} (Duration: {details['Duration']})"
-                for details in job_details
+                f"{details['Course Title' if 'skill' in mode else 'Job Title']} by {details['Institution']} (Duration: {details['Duration']})"
+                if "skill" in mode
+                else f"{details['Job Title']} at {details['Company']} (Location: {details['Location']}, Salary: {details['Salary']})"
+                for details in details_list
             ]
         )
 
-        # Update the LLM prompt to explicitly use direct addressing
-        additional_insights = llm(
+        # Generate LLM response
+        llm_response = llm(
             f"""
             {context}
             {outcome}
@@ -212,15 +199,34 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL):
             User's Question:
             {query}
 
-            Explain why these specific opportunities are a good fit for you and your career goals. Avoid referring to the user in the third person. Use 'you' and 'your' throughout the explanation.
+            Generate a complete response explaining why the specific opportunities (jobs or courses) are a good fit for the user's career goals.
+            Use the raw titles (without hyperlinks) in your explanation.
             """
         )
+        
 
-        # Combine into one final response
-        final_response = f"{first_paragraph}<br><br>{additional_insights}"
+        # Post-process the LLM response to embed hyperlinks only once
+        for details in details_list:
+            raw_title = details.get('Course Title' if 'skill' in mode else 'Job Title')
+            hyperlink = details.get("hyperlink")
 
-        history.append(("Chatbot", final_response))
-        return history, final_response  # Return combined response
+            if raw_title and raw_title in llm_response:
+                # Replace only the first occurrence of the title with the hyperlink
+                pattern = re.escape(raw_title)  # Escape special characters in the title
+                llm_response = re.sub(
+                    f"(?i)\\b{pattern}\\b",  # Match the exact title
+                    hyperlink,
+                    llm_response,
+                    count=1  # Replace only the first occurrence
+                )
+
+        print("Final Response with Hyperlinks (Single):", llm_response)
+
+
+        # Return the final response
+        history.append(("Chatbot", llm_response))
+        return history, llm_response
+
 
     except Exception as e:
         return history, f"Error: {str(e)}"
