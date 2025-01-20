@@ -1,3 +1,5 @@
+import fitz  # PyMuPDF
+
 class CvConverter:
     def __init__(self, cv_file):
         """
@@ -13,11 +15,18 @@ class CvConverter:
         Convert the CV document to plain text.
 
         Returns:
-            str: The converted text.
+            str: The extracted text from the CV.
         """
-        from docling.document_converter import DocumentConverter
-        converter = DocumentConverter()
-        return converter.convert(self.cv_file)
+        text = ""
+        try:
+            # Open the PDF file
+            with fitz.open(self.cv_file) as doc:
+                # Iterate through pages and extract text
+                for page in doc:
+                    text += page.get_text()
+        except Exception as e:
+            raise RuntimeError(f"Error processing the file: {e}")
+        return text
 
     def export_to_markdown(self, cv_text):
         """
@@ -29,7 +38,6 @@ class CvConverter:
         Returns:
             str: The Markdown representation of the CV document.
         """
-
-        from docling.document_converter import DocumentConverter
-        converter = DocumentConverter()
-        return cv_text.document.export_to_markdown()
+        # Simple Markdown conversion
+        markdown = f"# CV Document\n\n{cv_text}"
+        return markdown
