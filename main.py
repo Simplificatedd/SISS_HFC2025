@@ -229,7 +229,7 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL):
             chunks = careers_chunks
             data = careers_data
             fields = ["Job Title", "Company", "Location", "Salary", "Job Description", "Link"]
-        elif mode == "skill":
+        elif mode == "course":
             faiss_index = skills_faiss_index
             chunks = skills_chunks
             data = skills_data

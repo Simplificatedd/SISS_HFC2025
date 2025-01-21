@@ -194,7 +194,7 @@ const Chatbot = () => {
   };
 
   const toggleMode = () => {
-    setMode((prevMode) => (prevMode === "career" ? "skill" : "career"));
+    setMode((prevMode) => (prevMode === "career" ? "course" : "career"));
   };
 
   return (
@@ -205,7 +205,7 @@ const Chatbot = () => {
           <h1 className="chatbot-title">Jobot</h1>
         </div>
         <div className="mode-selector-header">
-          <span>{mode === "career" ? "Career" : "Skill"}</span>
+          <span>{mode === "career" ? "Career" : "Course"}</span>
           <label className="switch">
             <input type="checkbox" onChange={toggleMode} />
             <span className="slider"></span>
