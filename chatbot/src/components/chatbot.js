@@ -296,6 +296,7 @@ const Chatbot = () => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask anything."
             className="chatbot-input"
+            onKeyDown={(e) => e.key === "Enter" && handleSend()} // Added pressing Enter key to send message
           />
           <button onClick={handleSend} className="chatbot-send-button">
             ➤
