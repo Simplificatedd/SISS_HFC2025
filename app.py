@@ -34,19 +34,23 @@ skills_data = load_csv_data(SKILLS_CSV_PATH)
 def chat():
     global cv_text_cache
     try:
+        # Retrieve form data
         message = request.form.get("message", "")
         mode = request.form.get("mode", "")
         uploaded_file = request.files.get("uploadedFile")
         history = request.form.get("history", "[]")
-
+        
+        # Convert history from string to Python list
         history = eval(history)
 
+        # Check if a resume is uploaded
         if uploaded_file:
             filename = secure_filename(uploaded_file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             uploaded_file.save(filepath)
 
             try:
+                # Process the uploaded resume
                 converter = CvConverter(filepath)
                 cv_text_cache = converter.convert_to_text()
                 print(f"Extracted CV Text: {cv_text_cache}")
@@ -54,13 +58,13 @@ def chat():
                 logging.error(f"Error processing CV: {e}")
                 return jsonify({"response": "Error processing CV.", "status": "error"}), 500
 
-        # If no resume is uploaded, use an empty string as cv_text
+        # Use empty string if no resume is uploaded
         cv_text = cv_text_cache if cv_text_cache.strip() else ""
 
-        # Get the response
+        # Generate a response using the LLM
         history, response = answer_question(
             query=message,
-            cv_text=cv_text,  # Pass empty string if no resume
+            cv_text=cv_text,  # Use the CV text or an empty string
             mode=mode,
             history=history,
         )
@@ -72,8 +76,10 @@ def chat():
         })
 
     except Exception as e:
+        # Log the error and send an appropriate message
         logging.error(f"Error in /api/chat endpoint: {e}")
-        return jsonify({"response": f"Error: {str(e)}", "status": "error"}), 500
+        return jsonify({"response": "An error occurred while processing your request. Please try again later.", "status": "error"}), 500
+
 
 
 @app.route("/api/details", methods=["POST"])
