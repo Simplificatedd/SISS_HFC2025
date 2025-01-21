@@ -54,13 +54,13 @@ def chat():
                 logging.error(f"Error processing CV: {e}")
                 return jsonify({"response": "Error processing CV.", "status": "error"}), 500
 
-        if not cv_text_cache.strip():
-            return jsonify({"response": "Resume processing failed. Please try uploading a valid PDF.", "status": "error"}), 400
+        # If no resume is uploaded, use an empty string as cv_text
+        cv_text = cv_text_cache if cv_text_cache.strip() else ""
 
         # Get the response
         history, response = answer_question(
             query=message,
-            cv_text=cv_text_cache,
+            cv_text=cv_text,  # Pass empty string if no resume
             mode=mode,
             history=history,
         )
@@ -74,7 +74,6 @@ def chat():
     except Exception as e:
         logging.error(f"Error in /api/chat endpoint: {e}")
         return jsonify({"response": f"Error: {str(e)}", "status": "error"}), 500
-
 
 
 @app.route("/api/details", methods=["POST"])

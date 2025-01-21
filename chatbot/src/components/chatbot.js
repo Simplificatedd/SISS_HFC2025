@@ -22,19 +22,19 @@ const Chatbot = () => {
 
   const handleSend = async () => {
     if (!input.trim() && !file) {
-      setMessages([...messages, { sender: "Bot", text: "Please provide some input or upload your resume." }]);
+      setMessages([...messages, { sender: "Bot", text: "Please provide some input to proceed." }]);
       return;
     }
-
+  
     setRecommendations([]); // Clear recommendations
     setSelectedDetail(null); // Clear selected detail
     setSelectedOptions([]); // Clear detailed action options
-
+  
     const newMessages = [...messages, { sender: "You", text: input || "Uploaded resume." }];
     setMessages(newMessages);
-
+  
     setInput("");
-
+  
     const formData = new FormData();
     formData.append("message", input || ""); // Allow empty input if a file is uploaded
     formData.append("mode", mode);
@@ -42,13 +42,13 @@ const Chatbot = () => {
     if (file) {
       formData.append("uploadedFile", file);
     }
-
+  
     setIsTyping(true);
     try {
       const response = await axios.post("http://127.0.0.1:5000/api/chat", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+  
       setIsTyping(false);
       if (response.data.status === "success") {
         setMessages([...newMessages, { sender: "Bot", text: response.data.response }]);
@@ -70,7 +70,7 @@ const Chatbot = () => {
       setMessages([...newMessages, { sender: "Bot", text: "Unable to connect to the server." }]);
     }
   };
-
+  
   const handleRecommendationClick = async (title) => {
     try {
       const response = await axios.post("http://127.0.0.1:5000/api/details", { title, mode });
