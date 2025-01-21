@@ -108,18 +108,35 @@ const Chatbot = () => {
   };
 
   const handleOptionClick = async (option) => {
+    // Display the user's choice as a message
+    const userQuery = `Can you share with me more regarding ${option}?`;
+    setMessages((prev) => [
+      ...prev,
+      { sender: "You", text: userQuery },
+    ]);
+  
     if (option === "Go to Listing") {
       window.open(selectedDetail.Link, "_blank");
     } else {
       const value = selectedDetail[option] || "N/A";
+  
+      if (value === "N/A" || value.trim() === "") {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "Bot", text: `Sorry, there is no information available for ${option}.` },
+        ]);
+        return;
+      }
+  
       try {
         setIsTyping(true); // Show typing indicator
         const response = await axios.post("http://127.0.0.1:5000/api/paraphrase", {
-          text: `<strong>${option}:</strong> ${value}`,
+          text: `${option}: ${value}`,
         });
+  
         setIsTyping(false);
+  
         if (response.data.status === "success") {
-          // Use the paraphrased response
           setMessages((prev) => [
             ...prev,
             { sender: "Bot", text: response.data.text },
@@ -140,7 +157,6 @@ const Chatbot = () => {
     }
   };
   
-
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
 

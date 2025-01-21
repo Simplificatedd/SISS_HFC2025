@@ -98,29 +98,34 @@ def details():
 @app.route("/api/paraphrase", methods=["POST"])
 def paraphrase():
     try:
-        text = request.json.get("text", "")
-        if not text.strip():
+        text = request.json.get("text", "").strip()
+        if not text:
             return jsonify({"status": "error", "text": "No text provided to process."}), 400
 
+        # Initialize the LLM for summarization
         llm = OllamaLLM(model=MODEL)
+
+        # Call LLM to paraphrase/summarize the text
         paraphrased_text = llm(
             f"""
-            You are a professional career assistant chatbot. Respond in a concise, conversational, and user-friendly tone.
-            Summarize the following information in a way that feels natural and engaging. Do not reveal to the user that you are summarizing or processing the data.
-            Avoid overly formal language; respond as if you're directly answering the user's question with clarity.
+            You are a professional assistant. Summarize the following content succinctly and clearly in a friendly and direct manner.
+            Avoid any greeting phrases like "hey there, sure thing."
+            Focus on delivering the core information without explaining the summarization process.
+            Always end off by asking the user a question if they need help with other things.
 
-            Original Information:
+            Content to Summarize:
             {text}
-
-            Your Response:
             """
-        )
+        ).strip()
+
+        if not paraphrased_text:
+            raise ValueError("LLM returned empty text.")
+
         return jsonify({"status": "success", "text": paraphrased_text})
+
     except Exception as e:
         logging.error(f"Error in /api/paraphrase: {e}")
-        return jsonify({"status": "error", "text": "Failed to process text."}), 500
-
-
+        return jsonify({"status": "error", "text": "An error occurred while processing the text."}), 500
 
 
 if __name__ == "__main__":
