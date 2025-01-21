@@ -89,8 +89,8 @@ const Chatbot = () => {
         ...prev,
         {
           sender: "Bot",
-          text: `What would you like to know about <strong>${title}</strong> ${
-            mode === "career" ? `by ${details.Company}` : `from ${details.Institution}`
+          text: `What would you like to know about **${title}** ${
+          mode === "career" ? `by **${details.Company}**` : `from **${details.Institution}**`
           }?`,
           options: mode === "career"
             ? ["Company", "Location", "Employment Type", "Salary", "Job Description", "Go to Listing"]
