@@ -143,16 +143,16 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL):
         """
 
         # Determine dataset and fields based on mode
-        if "career" in mode:
+        if mode == "career":
             faiss_index = careers_faiss_index
             chunks = careers_chunks
             data = careers_data
-            fields = ["Job Title", "Company", "Location", "Salary", "Link"]
-        elif "skill" in mode:
+            fields = ["Job Title", "Company", "Location", "Salary", "Job Description", "Link"]
+        elif mode == "skill":
             faiss_index = skills_faiss_index
             chunks = skills_chunks
             data = skills_data
-            fields = ["Course Title", "Institution", "Duration", "Link"]
+            fields = ["Course Title", "Institution", "Duration", "Upcoming Date", "Full Fee", "Funded Fee", "Description", "Link"]
 
         relevant_chunks, relevant_indices = search_faiss_index(
             query=combined_query,
@@ -166,23 +166,23 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL):
         details_list = []
         for idx in relevant_indices[:3]:
             row = data.iloc[idx]
-            details = {field: row.get(field, "N/A") for field in fields}
-            details["hyperlink"] = (
-                f"<a href='{details.get('Link', '#')}' target='_blank'>{details.get('Course Title' if 'skill' in mode else 'Job Title')}</a>"
-            )
+            details = {field: row[field] if field in row else "N/A" for field in fields}
             details_list.append(details)
 
-        # Prepare a detailed context for the LLM
+        # Prepare recommendations
+        recommendations = [
+            {"title": details["Job Title" if mode == "career" else "Course Title"]}
+            for details in details_list
+        ]
+
+        # Generate LLM response
         detailed_context = "\n".join(
             [
-                f"{details['Course Title' if 'skill' in mode else 'Job Title']} by {details['Institution']} (Duration: {details['Duration']})"
-                if "skill" in mode
-                else f"{details['Job Title']} at {details['Company']} (Location: {details['Location']}, Salary: {details['Salary']})"
+                f"{details['Job Title' if mode == 'career' else 'Course Title']} at {details['Company' if mode == 'career' else 'Institution']}"
                 for details in details_list
             ]
         )
 
-        # Generate LLM response
         llm_response = llm(
             f"""
             {context}
@@ -204,30 +204,11 @@ def answer_question(query, cv_text, mode, history, model_name=MODEL):
             Generate a detailed response explaining why the specific opportunities ({'jobs' if mode == 'career' else 'courses'}) are a good fit for the user's career goals. Write the response in the second person (using "you" and "your") to address the user directly. Avoid referring to the user in the third person.
             """
         )
-        
 
-        # Post-process the LLM response to embed hyperlinks only once
-        for details in details_list:
-            raw_title = details.get('Course Title' if 'skill' in mode else 'Job Title')
-            hyperlink = details.get("hyperlink")
-
-            if raw_title and raw_title in llm_response:
-                # Replace only the first occurrence of the title with the hyperlink
-                pattern = re.escape(raw_title)  # Escape special characters in the title
-                llm_response = re.sub(
-                    f"(?i)\\b{pattern}\\b",  # Match the exact title
-                    hyperlink,
-                    llm_response,
-                    count=1  # Replace only the first occurrence
-                )
-
-        print("Final Response with Hyperlinks (Single):", llm_response)
-
-
-        # Return the final response
-        history.append(("Chatbot", llm_response))
-        return history, llm_response
-
+        return history, {
+            "text": llm_response,
+            "recommendations": recommendations,
+        }
 
     except Exception as e:
-        return history, f"Error: {str(e)}"
+        return history, {"text": f"Error: {str(e)}", "recommendations": []}
