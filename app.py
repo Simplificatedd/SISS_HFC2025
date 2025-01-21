@@ -58,7 +58,7 @@ def chat():
                 # Process the uploaded resume
                 converter = CvConverter(filepath)
                 cv_text_cache = converter.convert_to_text()
-                print(f"Extracted CV Text: {cv_text_cache}")
+                # print(f"Extracted CV Text: {cv_text_cache}")
             except Exception as e:
                 logging.error(f"Error processing CV: {e}")
                 return jsonify({"response": "Error processing CV.", "status": "error"}), 500
@@ -140,4 +140,4 @@ def paraphrase():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
