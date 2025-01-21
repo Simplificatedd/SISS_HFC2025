@@ -85,7 +85,7 @@ const Chatbot = () => {
             mode === "career" ? `by ${details.Company}` : `from ${details.Institution}`
           }?`,
           options: mode === "career"
-            ? ["Company", "Location", "Employment Type", "Salary", "Job Description", "View Full Details"]
+            ? ["Company", "Location", "Employment Type", "Salary", "Job Description", "Go to Listing"]
             : [
                 "Upcoming Date",
                 "Duration",
@@ -95,7 +95,7 @@ const Chatbot = () => {
                 "About This Course",
                 "What You'll Learn",
                 "Minimum Entry Requirement",
-                "View Full Details",
+                "Go to Listing",
               ],
         },
       ]);
@@ -107,17 +107,39 @@ const Chatbot = () => {
     }
   };
 
-  const handleOptionClick = (option) => {
-    if (option === "View Full Details") {
+  const handleOptionClick = async (option) => {
+    if (option === "Go to Listing") {
       window.open(selectedDetail.Link, "_blank");
     } else {
       const value = selectedDetail[option] || "N/A";
-      setMessages((prev) => [
-        ...prev,
-        { sender: "Bot", text: `<strong>${option}:</strong> ${value}` },
-      ]);
+      try {
+        setIsTyping(true); // Show typing indicator
+        const response = await axios.post("http://127.0.0.1:5000/api/paraphrase", {
+          text: `<strong>${option}:</strong> ${value}`,
+        });
+        setIsTyping(false);
+        if (response.data.status === "success") {
+          // Use the paraphrased response
+          setMessages((prev) => [
+            ...prev,
+            { sender: "Bot", text: response.data.text },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            { sender: "Bot", text: `Sorry, I couldn't summarize the information for ${option}.` },
+          ]);
+        }
+      } catch (error) {
+        setIsTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          { sender: "Bot", text: "An error occurred while summarizing the information. Please try again later." },
+        ]);
+      }
     }
   };
+  
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];

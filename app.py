@@ -7,6 +7,8 @@ from main import answer_question
 from config import MODEL
 from flask_cors import CORS
 from main import load_csv_data
+from langchain_ollama import OllamaLLM
+
 
 app = Flask(__name__)
 CORS(app)
@@ -92,6 +94,32 @@ def details():
 
     except Exception as e:
         return jsonify({"status": "error", "details": str(e)})
+
+@app.route("/api/paraphrase", methods=["POST"])
+def paraphrase():
+    try:
+        text = request.json.get("text", "")
+        if not text.strip():
+            return jsonify({"status": "error", "text": "No text provided to process."}), 400
+
+        llm = OllamaLLM(model=MODEL)
+        paraphrased_text = llm(
+            f"""
+            You are a professional career assistant chatbot. Respond in a concise, conversational, and user-friendly tone.
+            Summarize the following information in a way that feels natural and engaging. Do not reveal to the user that you are summarizing or processing the data.
+            Avoid overly formal language; respond as if you're directly answering the user's question with clarity.
+
+            Original Information:
+            {text}
+
+            Your Response:
+            """
+        )
+        return jsonify({"status": "success", "text": paraphrased_text})
+    except Exception as e:
+        logging.error(f"Error in /api/paraphrase: {e}")
+        return jsonify({"status": "error", "text": "Failed to process text."}), 500
+
 
 
 
