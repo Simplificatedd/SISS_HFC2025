@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import "../styles/chatbot.css";
 import { Button } from "@mui/material";
+import ReactMarkdown from "react-markdown";
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([]);
@@ -199,58 +200,63 @@ const Chatbot = () => {
         </div>
       </header>
 
-      <div className="chatbot-messages">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`chatbot-message ${msg.sender === "You" ? "user-message" : "bot-message"}`}
-          >
-            {msg.text && (
-              <div dangerouslySetInnerHTML={{ __html: msg.text }} />
-            )}
-            {msg.recommendations && (
-              <div>
-                {msg.recommendations.map((rec, idx) => (
-                  <Button
-                    key={idx}
-                    variant="outlined"
-                    color="primary"
-                    style={{ margin: "5px" }}
-                    onClick={() => handleRecommendationClick(rec.title)}
-                  >
-                    {rec.title}
-                  </Button>
-                ))}
-              </div>
-            )}
-            {msg.options && (
-              <div>
-                {msg.options.map((opt, idx) => (
-                  <Button
-                    key={idx}
-                    variant="outlined"
-                    color="primary"
-                    style={{ margin: "5px" }}
-                    onClick={() => handleOptionClick(opt)}
-                  >
-                    {opt}
-                  </Button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-        {isTyping && (
-          <div className="chatbot-message bot-message">
-            <div className="typing-indicator">
-              <span>.</span>
-              <span>.</span>
-              <span>.</span>
+
+
+    <div className="chatbot-messages">
+      {messages.map((msg, index) => (
+        <div
+          key={index}
+          className={`chatbot-message ${msg.sender === "You" ? "user-message" : "bot-message"}`}
+        >
+          {msg.sender === "Bot" ? (
+            <ReactMarkdown>{msg.text}</ReactMarkdown>
+          ) : (
+            <div>{msg.text}</div>
+          )}
+          {msg.recommendations && (
+            <div>
+              {msg.recommendations.map((rec, idx) => (
+                <Button
+                  key={idx}
+                  variant="outlined"
+                  color="primary"
+                  style={{ margin: "5px" }}
+                  onClick={() => handleRecommendationClick(rec.title)}
+                >
+                  {rec.title}
+                </Button>
+              ))}
             </div>
+          )}
+          {msg.options && (
+            <div>
+              {msg.options.map((opt, idx) => (
+                <Button
+                  key={idx}
+                  variant="outlined"
+                  color="primary"
+                  style={{ margin: "5px" }}
+                  onClick={() => handleOptionClick(opt)}
+                >
+                  {opt}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+      {isTyping && (
+        <div className="chatbot-message bot-message">
+          <div className="typing-indicator">
+            <span>.</span>
+            <span>.</span>
+            <span>.</span>
           </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+        </div>
+      )}
+      <div ref={messagesEndRef} />
+    </div>
+
 
       <div className="chatbot-input-container">
         {file && (

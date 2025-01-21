@@ -43,6 +43,11 @@ def chat():
         # Convert history from string to Python list
         history = eval(history)
 
+        if "remove resume" in message:
+            cv_text_cache = ""  # Clear the cached CV text
+            return jsonify({"response": "Your resume has been removed.", "status": "success"}), 200
+
+
         # Check if a resume is uploaded
         if uploaded_file:
             filename = secure_filename(uploaded_file.filename)
