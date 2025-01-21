@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 import "../styles/chatbot.css";
 
@@ -8,9 +8,13 @@ const Chatbot = () => {
   const [file, setFile] = useState(null);
   const [mode, setMode] = useState("career");
   const [isTyping, setIsTyping] = useState(false);
+  const fileInputRef = useRef(null); // Reference to the file input element
 
   const handleSend = async () => {
-    if (!input.trim() && !file) return;
+    if (!input.trim() && !file) {
+      setMessages([...messages, { sender: "Bot", text: "Please upload your resume before continuing." }]);
+      return;
+    }
 
     const newMessages = [...messages, { sender: "You", text: input || "Uploaded resume." }];
     setMessages(newMessages);
@@ -44,11 +48,23 @@ const Chatbot = () => {
   };
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+
+    // Validate file type (only PDF)
+    if (selectedFile && selectedFile.type !== "application/pdf") {
+      setMessages([...messages, { sender: "Bot", text: "Only PDF files are allowed. Please upload a valid file." }]);
+      fileInputRef.current.value = ""; // Reset the file input
+      return;
+    }
+
+    setFile(selectedFile);
   };
 
   const handleFileRemove = () => {
-    setFile(null);
+    setFile(null); // Clear the file state
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Reset the file input element
+    }
   };
 
   const toggleMode = () => {
@@ -72,8 +88,21 @@ const Chatbot = () => {
       </header>
       <div className="chatbot-messages">
         {messages.map((msg, index) => (
-          <div key={index} className={`chatbot-message ${msg.sender === "You" ? "user-message" : "bot-message"}`}>
-            {msg.text}
+          <div
+            key={index}
+            className={`chatbot-message ${msg.sender === "You" ? "user-message" : "bot-message"
+              }`}
+          >
+            {msg.sender === "Bot" ? (
+              // Ensure the HTML with hyperlinks is rendered
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: msg.text, // Render the HTML content
+                }}
+              />
+            ) : (
+              msg.text
+            )}
           </div>
         ))}
         {isTyping && (
@@ -86,8 +115,10 @@ const Chatbot = () => {
           </div>
         )}
       </div>
+
+
+
       <div className="chatbot-input-container">
-        {/* File Upload Section */}
         {file && (
           <div className="file-uploaded">
             {file.name}{" "}
@@ -96,8 +127,6 @@ const Chatbot = () => {
             </button>
           </div>
         )}
-
-        {/* Input Bar */}
         <div className="chatbot-input-bar">
           <label className="chatbot-attach-button">
             +
@@ -105,6 +134,7 @@ const Chatbot = () => {
               type="file"
               onChange={handleFileChange}
               className="chatbot-file-input"
+              ref={fileInputRef}
             />
           </label>
           <input
