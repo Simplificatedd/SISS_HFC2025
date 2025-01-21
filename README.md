@@ -51,6 +51,33 @@ Ensure you have `pip` installed. Then, install the required packages:
 pip install -r requirements.txt
 ```
 
+### 4. Set Node.js to version 16
+
+If you don’t have nvm installed, you can install it by following the instructions on its GitHub page.
+Or you can use curl:
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+```
+
+Install Node.js version 16:
+
+```bash
+nvm install 16
+```
+
+Switch to Node.js version 16:
+
+```bash
+nvm use 16
+```
+
+Verify installation:
+```bash
+node -v
+```
+v16.20.2
+
 ---
 
 ## Usage Guide
@@ -62,15 +89,25 @@ Start the application:
 python app.py
 ```
 
+Create another terminal and go into the chatbot directory:
+```bash
+cd chatbot
+```
+
+Start the web UI:
+```bash
+npm start
+```
+
 ### 2. Using the Application
-- **Chatbot will ask if you'd prefer Career or Course recommendations**:
-  - Respond to the chatbot by saying if you'd prefer career or course recommendations.
-  - After every course or career recommendation by the chatbot, you have to tell the bot if you'd like to be recommended courses or careers again.
+- **Toggle Between Career or Course results**:
+  - Click on the toggle switch on the top right to toggle between career or course results.
+
 - **Resume Parsing**:
   - Upload your resume through the chatbot interface.
   - The system will extract your skills and qualifications.
 
-- **Job Recommendations**:
+- **Career Recommendations**:
   - Based on your extracted skills, the chatbot will recommend relevant job opportunities from the CareersFuture dataset.
 
 - **Course Recommendations**:
