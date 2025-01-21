@@ -73,10 +73,17 @@ const Chatbot = () => {
   };
   
   const handleRecommendationClick = async (title) => {
+    // Add the user message for their query
+    const userQuery = `Could you share with me more about ${title}?`;
+    setMessages((prev) => [
+      ...prev,
+      { sender: "You", text: userQuery },
+    ]);
+  
     try {
       const response = await axios.post("http://127.0.0.1:5000/api/details", { title, mode });
       const details = response.data.details;
-
+  
       setSelectedDetail(details); // Store selected details
       setMessages((prev) => [
         ...prev,
@@ -107,8 +114,14 @@ const Chatbot = () => {
       ]);
     }
   };
-
+  
   const handleOptionClick = async (option) => {
+
+     // Skip adding a user message for "Go to Listing"
+    if (option === "Go to Listing") {
+      window.open(selectedDetail.Link, "_blank");
+      return;
+    }
     // Display the user's choice as a message
     const userQuery = `Can you share with me more regarding ${option}?`;
     setMessages((prev) => [

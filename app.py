@@ -120,6 +120,7 @@ def paraphrase():
             f"""
             You are a professional assistant. Summarize the following content succinctly and clearly in a friendly and direct manner.
             Avoid any greeting phrases like "hey there, sure thing."
+            If you get information about "Location: ", it means where this job is located at.
             Focus on delivering the core information without explaining the summarization process.
             Always end off by asking the user a question if they need help with other things.
 
